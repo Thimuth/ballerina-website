@@ -12,6 +12,9 @@ redirect_from:
             <div class="FullCode">
                 <div class="highlight"><pre><span class="kn">import</span> <span class="nx">ballerina</span><span class="o">/</span><span class="nx">io</span><span class="p">;</span>
 <span class="kn">import</span> <span class="nx">ballerina</span><span class="o">/</span><span class="nx">log</span><span class="p">;</span>
+
+<span class="c1">// Convert a `map&lt;json&gt;` value to an array of Strings.</span>
+<span class="c1">// Return the result as a tuple, which contains the headers and fields.</span>
 <span class="kd">function</span> <span class="nx">getFields</span><span class="p">(</span><span class="kt">map</span><span class="p">&lt;</span><span class="kt">json</span><span class="p">&gt;</span> <span class="nx">rec</span><span class="p">)</span> <span class="nx">returns</span> <span class="p">[</span><span class="kt">string</span><span class="p">[],</span> <span class="kt">string</span><span class="p">[]]</span> <span class="p">{</span>
     <span class="kt">string</span><span class="p">[]</span> <span class="nx">fields</span> <span class="p">=</span> <span class="p">[];</span>
     <span class="nx">foreach</span> <span class="k">var</span> <span class="nx">recordField</span> <span class="nx">in</span> <span class="nx">rec</span> <span class="p">{</span>
@@ -19,6 +22,8 @@ redirect_from:
     <span class="p">}</span>
     <span class="k">return</span> <span class="p">[</span><span class="nx">rec</span><span class="p">.</span><span class="nx">keys</span><span class="p">(),</span> <span class="nx">fields</span><span class="p">];</span>
 <span class="p">}</span>
+
+<span class="c1">// Writes `json` content to CSV.</span>
 <span class="kd">function</span> <span class="nx">writeCsv</span><span class="p">(</span><span class="kt">json</span><span class="p">[]</span> <span class="nx">content</span><span class="p">,</span> <span class="kt">string</span> <span class="nx">path</span><span class="p">)</span> <span class="nx">returns</span> <span class="nx">error</span><span class="err">?</span> <span class="p">{</span>
     <span class="nx">io</span><span class="p">:</span><span class="nx">WritableCSVChannel</span> <span class="nx">csvch</span> <span class="p">=</span> <span class="nx">check</span> <span class="nx">io</span><span class="p">:</span><span class="nx">openWritableCsvFile</span><span class="p">(</span><span class="nx">path</span><span class="p">);</span>
     <span class="kt">int</span> <span class="nx">recIndex</span> <span class="p">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -27,12 +32,16 @@ redirect_from:
         <span class="p">[</span><span class="kt">string</span><span class="p">[],</span> <span class="kt">string</span><span class="p">[]]</span> <span class="nx">result</span> <span class="p">=</span> <span class="nx">getFields</span><span class="p">(&lt;</span><span class="kt">map</span><span class="p">&lt;</span><span class="kt">json</span><span class="o">&gt;&gt;</span><span class="nx">content</span><span class="p">[</span><span class="nx">recIndex</span><span class="p">]);</span>
         <span class="k">var</span> <span class="p">[</span><span class="nx">headers</span><span class="p">,</span> <span class="nx">fields</span><span class="p">]</span> <span class="p">=</span> <span class="nx">result</span><span class="p">;</span>
         <span class="k">if</span> <span class="p">(</span><span class="nx">recIndex</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">//We ignore the result as this would mean a `nil` return</span>
             <span class="nx">check</span> <span class="nx">csvch</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">headers</span><span class="p">);</span>
         <span class="p">}</span>
         <span class="nx">check</span> <span class="nx">csvch</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">fields</span><span class="p">);</span>
         <span class="nx">recIndex</span> <span class="p">=</span> <span class="nx">recIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
     <span class="p">}</span>
-<span class="p">}</span><span class="nx">public</span> <span class="kd">function</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="nx">public</span> <span class="kd">function</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// The sample `json`, which will be written.</span>
     <span class="kt">json</span> <span class="nx">sample</span> <span class="p">=</span> <span class="p">{</span>
         <span class="s">&quot;employees&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s">&quot;employee&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -57,7 +66,10 @@ redirect_from:
             <span class="p">]</span>
         <span class="p">}</span>
     <span class="p">};</span>
+    <span class="c1">// Writes JSON into a CSV.</span>
     <span class="kt">string</span> <span class="nx">path</span> <span class="p">=</span> <span class="s">&quot;./files/sample.csv&quot;</span><span class="p">;</span>
+    <span class="c1">// Specifies the JSON array, which should be transformed into CSV.</span>
+    <span class="c1">// Also, provides the location the CSV should be written.</span>
     <span class="k">var</span> <span class="nx">result</span> <span class="p">=</span> <span class="nx">writeCsv</span><span class="p">(&lt;</span><span class="kt">json</span><span class="p">[]&gt;</span><span class="nx">sample</span><span class="p">.</span><span class="nx">employees</span><span class="p">.</span><span class="nx">employee</span><span class="p">,</span> <span class="nx">path</span><span class="p">);</span>
     <span class="k">if</span> <span class="p">(</span><span class="nx">result</span> <span class="nx">is</span> <span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">log</span><span class="p">:</span><span class="nx">printError</span><span class="p">(</span><span class="s">&quot;Error occurred while writing csv record :&quot;</span><span class="p">,</span>
